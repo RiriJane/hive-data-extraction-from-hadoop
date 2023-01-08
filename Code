@@ -88,3 +88,15 @@ SELECT * FROM books LIMIT 3;
 SELECT * FROM ratings LIMIT 3;
 SELECT * FROM tags LIMIT 3;
 
+-- Worst 10 ratings
+SELECT title, average_rating FROM books
+WHERE average_rating < 5.1 AND average_rating > 0
+ORDER BY average_rating ASC
+LIMIT 10;
+
+-- Best 10 ratings
+SELECT title, average_rating FROM books
+WHERE average_rating < 5.1 AND average_rating > 0
+ORDER BY average_rating ASC
+LIMIT 10;
+
