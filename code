@@ -1,0 +1,90 @@
+--  Create temporary table to hold data
+CREATE TABLE temp_books (col_value STRING) STORED AS TEXTFILE;
+CREATE TABLE temp_book_tags (col_value STRING) STORED AS TEXTFILE;
+CREATE TABLE temp_ratings (col_value STRING) STORED AS TEXTFILE;
+CREATE TABLE temp_tags (col_value STRING) STORED AS TEXTFILE;
+
+--  Populate temporary tables with .cvs files
+LOAD DATA INPATH '/user/raj_ops/books.csv' OVERWRITE INTO TABLE temp_books;
+LOAD DATA INPATH '/user/raj_ops/book_tags.csv' OVERWRITE INTO TABLE temp_book_tags;
+LOAD DATA INPATH '/user/raj_ops/ratings.csv' OVERWRITE INTO TABLE temp_ratings;
+LOAD DATA INPATH '/user/raj_ops/tags.csv' OVERWRITE INTO TABLE temp_tags;
+
+--  Verify if the temporary tables are well populated
+--  Show only 3 lines
+SELECT * FROM temp_books LIMIT 3;
+SELECT * FROM temp_book_tags LIMIT 3;
+SELECT * FROM temp_ratings LIMIT 3;
+SELECT * FROM temp_tags LIMIT 3;
+
+--  Create table to hold data
+CREATE TABLE book_tags (goodreads_book_id INT, tag_id INT, count INT);
+CREATE TABLE books (book_id INT, goodreads_book_id INT, best_book_id INT,
+                    work_id INT, books_count INT, isbn INT, isbn13 STRING,
+                    authors STRING, original_publication_year INT, original_title STRING, 
+                    title STRING, language_code STRING, average_rating FLOAT, 
+                    ratings_count INT, work_ratings_count INT, 
+                    work_text_reviews_count INT, ratings_1 INT, ratings_2 INT, 
+                    ratings_3 INT, ratings_4 INT, ratings_5 INT, 
+                    image_url STRING,small_image_url STRING);
+CREATE TABLE ratings (user_id INT, book_id INT, rating INT);
+CREATE TABLE tags (tag_id INT, tag_name STRING);
+
+--  Extract data from temporary tables
+insert overwrite table book_tags
+SELECT
+ regexp_extract(col_value, '^(?:([^,]*),?){1}', 1) goodreads_book_id,
+ regexp_extract(col_value, '^(?:([^,]*),?){2}', 1) tag_id,
+ regexp_extract(col_value, '^(?:([^,]*),?){3}', 1) count
+from temp_book_tags;
+
+
+insert overwrite table books
+SELECT
+ regexp_extract(col_value, '^(?:([^,]*),?){1}', 1) book_id,
+ regexp_extract(col_value, '^(?:([^,]*),?){2}', 1) goodreads_book_id,
+ regexp_extract(col_value, '^(?:([^,]*),?){3}', 1) best_book_id,
+ regexp_extract(col_value, '^(?:([^,]*),?){4}', 1) work_id,
+ regexp_extract(col_value, '^(?:([^,]*),?){5}', 1) books_count,
+ regexp_extract(col_value, '^(?:([^,]*),?){6}', 1) isbn,
+ regexp_extract(col_value, '^(?:([^,]*),?){7}', 1) isbn13,
+ regexp_extract(col_value, '^(?:([^,]*),?){8}', 1) authors,
+ regexp_extract(col_value, '^(?:([^,]*),?){9}', 1) original_publication_year,
+ regexp_extract(col_value, '^(?:([^,]*),?){10}', 1) original_title,
+ regexp_extract(col_value, '^(?:([^,]*),?){11}', 1) title,
+ regexp_extract(col_value, '^(?:([^,]*),?){12}', 1) language_code,
+ regexp_extract(col_value, '^(?:([^,]*),?){13}', 1) average_rating,
+ regexp_extract(col_value, '^(?:([^,]*),?){14}', 1) ratings_count,
+ regexp_extract(col_value, '^(?:([^,]*),?){15}', 1) work_ratings_count,
+ regexp_extract(col_value, '^(?:([^,]*),?){16}', 1) work_text_reviews_count,
+ regexp_extract(col_value, '^(?:([^,]*),?){17}', 1) ratings_1,
+ regexp_extract(col_value, '^(?:([^,]*),?){18}', 1) ratings_2,
+ regexp_extract(col_value, '^(?:([^,]*),?){19}', 1) ratings_3,
+ regexp_extract(col_value, '^(?:([^,]*),?){20}', 1) ratings_4,
+ regexp_extract(col_value, '^(?:([^,]*),?){21}', 1) ratings_5,
+ regexp_extract(col_value, '^(?:([^,]*),?){22}', 1) img_url,
+ regexp_extract(col_value, '^(?:([^,]*),?){23}', 1) small_img_url
+from temp_books;
+
+insert overwrite table ratings
+SELECT
+ regexp_extract(col_value, '^(?:([^,]*),?){1}', 1) user_id,
+ regexp_extract(col_value, '^(?:([^,]*),?){2}', 1) book_id,
+ regexp_extract(col_value, '^(?:([^,]*),?){3}', 1) rating
+from temp_ratings;
+
+
+insert overwrite table tags
+SELECT
+ regexp_extract(col_value, '^(?:([^,]*),?){1}', 1) tag_id,
+ regexp_extract(col_value, '^(?:([^,]*),?){2}', 1) tag_name
+from temp_tags;
+
+
+-- Verify if the tables are correctly implemented
+-- Show only 3 lines
+SELECT * FROM book_tags LIMIT 3;
+SELECT * FROM books LIMIT 3;
+SELECT * FROM ratings LIMIT 3;
+SELECT * FROM tags LIMIT 3;
+
